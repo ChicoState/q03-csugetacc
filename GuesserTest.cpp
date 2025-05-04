@@ -14,15 +14,8 @@ class GuesserTest : public ::testing::Test
 		virtual void TearDown(){} //clean up after each test, (before destructor)
 };
 
-// Example "smoke test" (can be deleted)
-TEST(GuesserTest, smoke_test)
-{
-  Guesser object("Secret");
-  ASSERT_EQ( 1+1, 2 );
-}
 
-
-
+//basic use cases
 TEST(GuesserTest, correct_pswd_try1)
 {
 	Guesser object("Password");
@@ -57,7 +50,7 @@ TEST(GuesserTest, correct_pswd_try4)
 	ASSERT_EQ(object.remaining(), 0);
 }
 
-
+//truncation tests
 TEST(GuesserTest, long_secret_pass)
 {
 	Guesser object("0123456789abcdefghijklmnopqrstuvwxyz0123456789");
@@ -79,7 +72,7 @@ TEST(GuesserTest, big_distance_try2)
 	Guesser object("Password");
 	ASSERT_FALSE(object.match("sbeve"));
 	ASSERT_FALSE(object.match("Password"));
-	ASSERT_EQ(object.remaining(), 1);	// i have no idea why this one resets to 3  //update: far off guesses dont decrease m_remaining
+	ASSERT_EQ(object.remaining(), 1);	
 }
 
 
@@ -145,21 +138,29 @@ TEST(GuesserTest, guess_longer_pass)
 }
 
 
-TEST(GuesserTest, guess_shorter_close)
+//test distance calculations
+TEST(GuesserTest, distance_1)
 {
-	Guesser object("123456789");
-	ASSERT_FALSE(object.match("12345678"));
-	ASSERT_TRUE(object.match("123456789"));
-	ASSERT_EQ(object.remaining(), 3);
+	Guesser object("Password");
+	ASSERT_FALSE(object.match("Pazsword"));
+	ASSERT_TRUE(object.match("Password"));
 }
 
-TEST(GuesserTest, guess_longer_close)
+TEST(GuesserTest, distance_2)
 {
-	Guesser object("123456789");
-	ASSERT_FALSE(object.match("123456789a"));
-	ASSERT_TRUE(object.match("123456789"));
-	ASSERT_EQ(object.remaining(), 3);
+	Guesser object("Password");
+	ASSERT_FALSE(object.match("Pazzword"));
+	ASSERT_TRUE(object.match("Password"));
 }
+
+TEST(GuesserTest, distance_3)
+{
+	Guesser object("Password");
+	ASSERT_FALSE(object.match("Pozzword"));
+	ASSERT_FALSE(object.match("Password"));
+}
+
+
 
 
 TEST(GuesserTest, fail_pswd_try1)
@@ -169,7 +170,7 @@ TEST(GuesserTest, fail_pswd_try1)
 	ASSERT_EQ(object.remaining(), 2);
 }
 
-
+//test case specifically for the line 32 edge case
 TEST(GuesserTest, line_32_test)
 {
 	Guesser object("Password");
@@ -179,7 +180,7 @@ TEST(GuesserTest, line_32_test)
 }
 
 
-
+//these tests focus on the issue of m_remaining not decreasing when distance is greater than 2
 TEST(GuesserTest, wierd_remaining_reset1)
 {
 	Guesser object("Password");
@@ -226,6 +227,8 @@ TEST(GuesserTest, wierd_remaining_reset5)
 }
 
 
+//test multiple uses of match
+
 TEST(GuesserTest, test_m_remaining_issue_1)		//because m_remaining doesnt reset the program will break after multiple logins 
 {
 	Guesser object("Password");
@@ -233,7 +236,7 @@ TEST(GuesserTest, test_m_remaining_issue_1)		//because m_remaining doesnt reset 
 	ASSERT_EQ(object.remaining(), 2);
 	ASSERT_TRUE(object.match("Password"));
 
-	//ASSERT_EQ(object.remaining(), 3);
+	ASSERT_EQ(object.remaining(), 3);
 
 	ASSERT_FALSE(object.match("password"));
 	ASSERT_FALSE(object.match("password"));
